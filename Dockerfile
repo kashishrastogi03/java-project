@@ -1,5 +1,5 @@
 # Use the OpenJDK 17 slim base image
-FROM openjdk:17-jdk-slim
+FROM openjdk:18-jdk-slim
 
 # Set environment variables to avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive

@@ -1,0 +1,11 @@
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"  # Location of pom.xml
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "docker"
+    directory: "/"  # Location of Dockerfile
+    schedule:
+      interval: "weekly"

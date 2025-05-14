@@ -16,7 +16,7 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '17'  # You can make this dynamic if needed (e.g., from env variables or inputs)
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Compile and Test with Maven
@@ -31,7 +31,6 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          # Ensure Dockerfile is in the correct location
           docker build -t my-java-app .
 
       - name: Install Grype
@@ -53,3 +52,13 @@ jobs:
         with:
           name: grype-report
           path: grype-report.json
+
+      # Add Bicep linting step
+      - name: Set up Bicep CLI
+        uses: azure/setup-bicep@v1
+        with:
+          version: 'latest'  
+
+      - name: Lint Bicep Files
+        run: |
+          bicep build --lint '**/*.bicep'

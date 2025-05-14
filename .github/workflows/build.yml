@@ -53,8 +53,13 @@ jobs:
           name: grype-report
           path: grype-report.json
 
-      # Use github-actions/bicep-linter for Linting Bicep Files
-      - name: Lint Bicep Files
-        uses: github-actions/bicep-linter@v1
+      # Install Azure CLI
+      - name: Install Azure CLI
+        uses: azure/setup-azure-cli@v1
         with:
-          path: '**/*.bicep'
+          azure-cli-version: '2.39.0'
+
+      # Lint Bicep Files using `az bicep` CLI
+      - name: Lint Bicep Files
+        run: |
+          az bicep build --file '**/*.bicep' || { echo "Bicep linting failed"; exit 1; }

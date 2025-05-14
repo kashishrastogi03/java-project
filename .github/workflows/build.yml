@@ -53,12 +53,7 @@ jobs:
           name: grype-report
           path: grype-report.json
 
-      # Install Azure CLI
-      - name: Install Azure CLI
+      # Use Azure CLI Docker container
+      - name: Use Azure CLI Docker Container
         run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
-      # Lint Bicep Files using `az bicep` CLI
-      - name: Lint Bicep Files
-        run: |
-          az bicep build --file '**/*.bicep' || { echo "Bicep linting failed"; exit 1; }
+          docker run --rm mcr.microsoft.com/azure-cli az bicep build --file '**/*.bicep'

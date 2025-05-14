@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.List;
 
 public interface ProductService {
-    void saveProduct(Product product, MultipartFile file) throws IOException;
-    void updateProduct(Product product, MultipartFile file) throws IOException;
+    void saveProduct(Product product) throws IOException;
+    void updateProduct(Product product) throws IOException;
     void deleteProduct(int id);
     List<Product> getAllProducts();
     Product getProductById(int id);

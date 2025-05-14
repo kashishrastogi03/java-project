@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ecommerce
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - springboot-network
+
+  app:
+    build: .
+    container_name: springboot-app
+    ports:
+      - "9091:9091"
+    depends_on:
+      - db
+    networks:
+      - springboot-network
+
+volumes:
+  mysql-data:
+
+networks:
+  springboot-network:

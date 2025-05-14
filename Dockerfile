@@ -1,21 +1,22 @@
-# Use the OpenJDK 17 slim base image
-FROM openjdk:18-jdk-slim
+# Use OpenJDK 17 slim as base image
+FROM openjdk:17-jdk-slim
 
-# Set environment variables to avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update apt-get, upgrade packages, and install the latest security patches
-RUN apt-get update && apt-get upgrade -y && apt-get install --only-upgrade apt && \
+RUN apt-get update && apt-get install -y curl && \
+    apt-get upgrade -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Set working directory to /app
 WORKDIR /app
 
-# Copy the built JAR file from the target folder to the container
-COPY target/*.jar app.jar
+# Copy WAR file instead of JAR
+COPY target/*.war app.war
 
-# Expose port 8080
-EXPOSE 8080
+RUN curl -o /wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
+    chmod +x /wait-for-it.sh
 
-# Set the entrypoint to run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+EXPOSE 9091
+
+# Run the WAR file (assumes embedded Tomcat)
+ENTRYPOINT ["/wait-for-it.sh", "db:3306", "--timeout=60", "--", "java", "-jar", "app.war"]
+

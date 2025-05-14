@@ -52,7 +52,6 @@
                     <th>Title</th>
                     <th>Quantity</th>
                     <th>Size</th>
-                    <th>Image</th>
                     <th>Description</th>
                     <th>Price</th>
                     <th>Actions</th>
@@ -65,13 +64,13 @@
                     <td>${product.title}</td>
                     <td>${product.quantity}</td>
                     <td>${product.size}</td>
-                    <td><img src="${product.image}" class="product-img" /></td>
                     <td>${product.description}</td>
                     <td>&#8377; ${product.price}</td>
                     <td>
-                        <button class="btn btn-primary btn-sm"
-                                onclick="openEditModal(${product.id}, '${product.title}', ${product.quantity}, ${product.size}, '${product.image}', '${product.description}', ${product.price})">Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">Delete</button>
+                    <button class="btn btn-primary btn-sm"
+        onclick="openEditModal(${product.id}, '${product.title}', ${product.quantity}, ${product.size}, '${product.description}', ${product.price})">Edit</button>
+                    
+                          <button class="btn btn-danger btn-sm" onclick="deleteProduct(${product.id})">Delete</button>
                     </td>
                 </tr>
             </c:forEach>
@@ -109,11 +108,7 @@
                         <input type="number" name="size" id="productSize" class="form-control" required>
                     </div>
 
-                    <div class="mb-3">
-                        <label>Image</label>
-                        <input type="file" name="imageFile" id="productImage" class="form-control">
-                        <img id="imagePreview" src="" class="product-img mt-2" style="display: none;">
-                    </div>
+              
 
                     <div class="mb-3">
                         <label>Description</label>
@@ -149,16 +144,13 @@
         document.getElementById("productTitle").value = "";
         document.getElementById("productQuantity").value = "";
         document.getElementById("productSize").value = "";
-        document.getElementById("productImage").value = "";
         document.getElementById("productDescription").value = "";
         document.getElementById("productPrice").value = "";
 
-        document.getElementById("imagePreview").src = "";
-        document.getElementById("imagePreview").style.display = "none";
     }
 
 
-   function openEditModal(id, title, quantity, size, image, description, price) {
+   function openEditModal(id, title, quantity, size, description, price) {
        document.getElementById("modalTitle").innerText = "Edit Product";
        document.getElementById("productForm").action = "/product/edit";
 
@@ -179,8 +171,6 @@
        document.getElementById("productDescription").value = description;
        document.getElementById("productPrice").value = price;
 
-       document.getElementById("imagePreview").src = image;
-       document.getElementById("imagePreview").style.display = "block";
 
        const productModal = new bootstrap.Modal(document.getElementById('productModal'));
        productModal.show();

@@ -7,10 +7,12 @@
 	<groupId>com.nagarro</groupId>
 	<artifactId>Advancd_Assignment3</artifactId>
 	<version>1.0-SNAPSHOT</version>
+	<packaging>war</packaging>
+
 
 	<properties>
-		<maven.compiler.source>21</maven.compiler.source>
-		<maven.compiler.target>21</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source> <!-- Changed from 21 to 17 -->
+		<maven.compiler.target>17</maven.compiler.target> <!-- Changed from 21 to 17 -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -95,7 +97,6 @@
 		</dependency>
 	</dependencies>
 
-
 	<!-- Spring Boot Plugin -->
 	<build>
 		<plugins>
@@ -108,12 +109,11 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.14.0</version>
 				<configuration>
-					<source>17</source>
-					<target>17</target>
+					<source>17</source> <!-- Already set to 17 -->
+					<target>17</target> <!-- Already set to 17 -->
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
 
 </project>

@@ -53,14 +53,8 @@ jobs:
           name: grype-report
           path: grype-report.json
 
-      # Install Bicep CLI
-      - name: Install Bicep CLI
-        run: |
-          curl -Lo bicep https://github.com/Azure/bicep/releases/download/v0.11.4/bicep-win-x64.exe
-          sudo mv bicep /usr/local/bin/bicep
-          bicep --version
-
-      # Lint Bicep Files
+      # Use the Bicep Linter Action for Linting Bicep Files
       - name: Lint Bicep Files
-        run: |
-          bicep build --lint '**/*.bicep'
+        uses: Azure/bicep-linter-action@v1
+        with:
+          path: '**/*.bicep'

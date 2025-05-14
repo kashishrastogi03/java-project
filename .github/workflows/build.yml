@@ -53,8 +53,8 @@ jobs:
           name: grype-report
           path: grype-report.json
 
-      # Use the Bicep Linter Action for Linting Bicep Files
+      # Use github-actions/bicep-linter for Linting Bicep Files
       - name: Lint Bicep Files
-        uses: Azure/bicep-linter-action@v1
+        uses: github-actions/bicep-linter@v1
         with:
           path: '**/*.bicep'

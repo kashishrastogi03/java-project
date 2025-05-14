@@ -57,5 +57,5 @@ jobs:
         run: |
           for file in $(find . -name '*.bicep'); do
             echo "Linting $file"
-            bicep build --file "$file"
+            bicep build "$file"
           done

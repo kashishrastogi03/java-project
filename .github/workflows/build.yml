@@ -53,7 +53,9 @@ jobs:
           name: grype-report
           path: grype-report.json
 
-      # Use Azure CLI Docker container
-      - name: Use Azure CLI Docker Container
+      - name: Bicep Lint
         run: |
-          docker run --rm mcr.microsoft.com/azure-cli az bicep build --file '**/*.bicep'
+          for file in $(find . -name '*.bicep'); do
+            echo "Linting $file"
+            bicep build --file "$file"
+          done

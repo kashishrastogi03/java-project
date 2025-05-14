@@ -55,9 +55,8 @@ jobs:
 
       # Install Azure CLI
       - name: Install Azure CLI
-        uses: azure/setup-azure-cli@v1
-        with:
-          azure-cli-version: '2.39.0'
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
       # Lint Bicep Files using `az bicep` CLI
       - name: Lint Bicep Files

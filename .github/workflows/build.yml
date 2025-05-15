@@ -53,9 +53,20 @@ jobs:
           name: grype-report
           path: grype-report.json
 
+      - name: List Bicep files
+        run: |
+          echo "Looking for Bicep files..."
+          find . -name '*.bicep' || echo "No Bicep files found."
+
       - name: Bicep Lint
         run: |
-          for file in $(find . -name '*.bicep'); do
+          files=$(find . -name '*.bicep')
+          if [ -z "$files" ]; then
+            echo "No Bicep files to lint."
+            exit 0
+          fi
+
+          for file in $files; do
             echo "Linting $file"
-            bicep build "$file"
+            bicep build "$file" || exit 1
           done

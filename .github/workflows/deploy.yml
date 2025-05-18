@@ -27,7 +27,7 @@ jobs:
 
       - name: Helm Upgrade (Deploy App)
         run: |
-          helm upgrade --install ecommerce ./helm \
+          helm upgrade --install ecommerce ./ecommerce-app/helm \
             -n ecommerce \
             --create-namespace \
             --set image.repository=${{ secrets.ACR_LOGIN_SERVER }}/my-java-app \

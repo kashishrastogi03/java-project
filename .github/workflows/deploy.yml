@@ -1,0 +1,35 @@
+name: Deploy to AKS
+
+on:
+  workflow_run:
+    workflows: ["Maven Build"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        run: |
+          az aks get-credentials --resource-group kashishrastogi \
+                                 --name aks-kashish \
+                                 --overwrite-existing
+
+      - name: Helm Upgrade (Deploy App)
+        run: |
+          helm upgrade --install ecommerce ./helm \
+            -n ecommerce \
+            --create-namespace \
+            --set image.repository=${{ secrets.ACR_LOGIN_SERVER }}/my-java-app \
+            --set image.tag=latest \
+            --wait

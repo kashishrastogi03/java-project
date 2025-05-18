@@ -45,6 +45,15 @@ jobs:
         run: |
           docker build -t my-java-app .
 
+      - name: Login to ACR
+        run: |
+          echo ${{ secrets.ACR_PASSWORD }} | docker login ${{ secrets.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password-stdin
+
+      - name: Tag and Push Image to ACR
+        run: |
+          docker tag my-java-app:latest ${{ secrets.ACR_LOGIN_SERVER }}/my-java-app:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/my-java-app:latest
+
       - name: Install Grype
         run: |
           mkdir -p ./bin

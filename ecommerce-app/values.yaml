@@ -2,9 +2,13 @@
 replicaCount: 1
 
 image:
-  repository: kashishrastogi/ecommerce-app
+  #repository: kashishrastogi/ecommerce-app
+  #tag: latest
+  #pullPolicy: IfNotPresent
+  repository: azureacr11.azurecr.io/my-java-app
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
+
 
 service:
   type: LoadBalancer

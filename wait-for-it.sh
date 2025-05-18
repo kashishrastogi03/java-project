@@ -1,182 +1,136 @@
 #!/usr/bin/env bash
-# Use this script to test if a given TCP host/port are available
 
-WAITFORIT_cmdname=${0##*/}
+# wait-for-it.sh
+# This script waits for a TCP host:port to become available.
+# You can optionally run a command after the check is successful.
 
-echoerr() { if [[ $WAITFORIT_QUIET -ne 1 ]]; then echo "$@" 1>&2; fi }
+CMD_NAME=${0##*/}
 
-usage()
-{
-    cat << USAGE >&2
+# Default values
+QUIET=0
+STRICT=0
+CHILD=0
+TIMEOUT=60
+IS_BUSYBOX=0
+BUSY_TIMEOUT_FLAG=""
+CLI_CMD=()
+
+echoerr() {
+  [[ $QUIET -ne 1 ]] && echo "$@" 1>&2
+}
+
+usage() {
+  cat <<EOF >&2
 Usage:
-    $WAITFORIT_cmdname host:port [-s] [-t timeout] [-- command args]
-    -h HOST | --host=HOST       Host or IP under test
-    -p PORT | --port=PORT       TCP port under test
-                                Alternatively, you specify the host and port as host:port
-    -s | --strict               Only execute subcommand if the test succeeds
-    -q | --quiet                Don't output any status messages
-    -t TIMEOUT | --timeout=TIMEOUT
-                                Timeout in seconds, zero for no timeout
-    -- COMMAND ARGS             Execute command with args after the test finishes
-USAGE
-    exit 1
+  $CMD_NAME host:port [-s] [-t timeout] [-- command args]
+  -h HOST | --host=HOST          Host or IP under test
+  -p PORT | --port=PORT          TCP port under test
+                                 Alternatively use host:port as a single argument
+  -s | --strict                  Only execute subcommand if the test succeeds
+  -q | --quiet                   Suppress all output except errors
+  -t TIMEOUT | --timeout=TIMEOUT
+                                 Timeout in seconds (0 = no timeout)
+  -- COMMAND ARGS                Execute command after test
+EOF
+  exit 1
 }
 
-wait_for()
-{
-    if [[ $WAITFORIT_TIMEOUT -gt 0 ]]; then
-        echoerr "$WAITFORIT_cmdname: waiting $WAITFORIT_TIMEOUT seconds for $WAITFORIT_HOST:$WAITFORIT_PORT"
+wait_for_connection() {
+  [[ $TIMEOUT -gt 0 ]] && \
+    echoerr "$CMD_NAME: waiting $TIMEOUT seconds for $HOST:$PORT" || \
+    echoerr "$CMD_NAME: waiting for $HOST:$PORT without timeout"
+
+  local start_ts=$(date +%s)
+  local result
+
+  while :; do
+    if [[ $IS_BUSYBOX -eq 1 ]]; then
+      nc -z $HOST $PORT
+      result=$?
     else
-        echoerr "$WAITFORIT_cmdname: waiting for $WAITFORIT_HOST:$WAITFORIT_PORT without a timeout"
+      (echo -n > /dev/tcp/$HOST/$PORT) >/dev/null 2>&1
+      result=$?
     fi
-    WAITFORIT_start_ts=$(date +%s)
-    while :
-    do
-        if [[ $WAITFORIT_ISBUSY -eq 1 ]]; then
-            nc -z $WAITFORIT_HOST $WAITFORIT_PORT
-            WAITFORIT_result=$?
-        else
-            (echo -n > /dev/tcp/$WAITFORIT_HOST/$WAITFORIT_PORT) >/dev/null 2>&1
-            WAITFORIT_result=$?
-        fi
-        if [[ $WAITFORIT_result -eq 0 ]]; then
-            WAITFORIT_end_ts=$(date +%s)
-            echoerr "$WAITFORIT_cmdname: $WAITFORIT_HOST:$WAITFORIT_PORT is available after $((WAITFORIT_end_ts - WAITFORIT_start_ts)) seconds"
-            break
-        fi
-        sleep 1
-    done
-    return $WAITFORIT_result
+
+    if [[ $result -eq 0 ]]; then
+      local end_ts=$(date +%s)
+      echoerr "$CMD_NAME: $HOST:$PORT is available after $((end_ts - start_ts)) seconds"
+      break
+    fi
+    sleep 1
+  done
+
+  return $result
 }
 
-wait_for_wrapper()
-{
-    # In order to support SIGINT during timeout: http://unix.stackexchange.com/a/57692
-    if [[ $WAITFORIT_QUIET -eq 1 ]]; then
-        timeout $WAITFORIT_BUSYTIMEFLAG $WAITFORIT_TIMEOUT $0 --quiet --child --host=$WAITFORIT_HOST --port=$WAITFORIT_PORT --timeout=$WAITFORIT_TIMEOUT &
-    else
-        timeout $WAITFORIT_BUSYTIMEFLAG $WAITFORIT_TIMEOUT $0 --child --host=$WAITFORIT_HOST --port=$WAITFORIT_PORT --timeout=$WAITFORIT_TIMEOUT &
-    fi
-    WAITFORIT_PID=$!
-    trap "kill -INT -$WAITFORIT_PID" INT
-    wait $WAITFORIT_PID
-    WAITFORIT_RESULT=$?
-    if [[ $WAITFORIT_RESULT -ne 0 ]]; then
-        echoerr "$WAITFORIT_cmdname: timeout occurred after waiting $WAITFORIT_TIMEOUT seconds for $WAITFORIT_HOST:$WAITFORIT_PORT"
-    fi
-    return $WAITFORIT_RESULT
+wait_with_timeout() {
+  if [[ $QUIET -eq 1 ]]; then
+    timeout $BUSY_TIMEOUT_FLAG $TIMEOUT $0 --quiet --child --host=$HOST --port=$PORT --timeout=$TIMEOUT &
+  else
+    timeout $BUSY_TIMEOUT_FLAG $TIMEOUT $0 --child --host=$HOST --port=$PORT --timeout=$TIMEOUT &
+  fi
+
+  local pid=$!
+  trap "kill -INT -$pid" INT
+  wait $pid
+  return $?
 }
 
-# process arguments
-while [[ $# -gt 0 ]]
-do
-    case "$1" in
-        *:* )
-        WAITFORIT_hostport=(${1//:/ })
-        WAITFORIT_HOST=${WAITFORIT_hostport[0]}
-        WAITFORIT_PORT=${WAITFORIT_hostport[1]}
-        shift 1
-        ;;
-        --child)
-        WAITFORIT_CHILD=1
-        shift 1
-        ;;
-        -q | --quiet)
-        WAITFORIT_QUIET=1
-        shift 1
-        ;;
-        -s | --strict)
-        WAITFORIT_STRICT=1
-        shift 1
-        ;;
-        -h)
-        WAITFORIT_HOST="$2"
-        if [[ $WAITFORIT_HOST == "" ]]; then break; fi
-        shift 2
-        ;;
-        --host=*)
-        WAITFORIT_HOST="${1#*=}"
-        shift 1
-        ;;
-        -p)
-        WAITFORIT_PORT="$2"
-        if [[ $WAITFORIT_PORT == "" ]]; then break; fi
-        shift 2
-        ;;
-        --port=*)
-        WAITFORIT_PORT="${1#*=}"
-        shift 1
-        ;;
-        -t)
-        WAITFORIT_TIMEOUT="$2"
-        if [[ $WAITFORIT_TIMEOUT == "" ]]; then break; fi
-        shift 2
-        ;;
-        --timeout=*)
-        WAITFORIT_TIMEOUT="${1#*=}"
-        shift 1
-        ;;
-        --)
-        shift
-        WAITFORIT_CLI=("$@")
-        break
-        ;;
-        --help)
-        usage
-        ;;
-        *)
-        echoerr "Unknown argument: $1"
-        usage
-        ;;
-    esac
+# Parse CLI arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    *:*)
+      IFS=':' read HOST PORT <<<"$1"
+      shift
+      ;;
+    -h) HOST="$2"; shift 2 ;;
+    --host=*) HOST="${1#*=}"; shift ;;
+    -p) PORT="$2"; shift 2 ;;
+    --port=*) PORT="${1#*=}"; shift ;;
+    -t) TIMEOUT="$2"; shift 2 ;;
+    --timeout=*) TIMEOUT="${1#*=}"; shift ;;
+    -q|--quiet) QUIET=1; shift ;;
+    -s|--strict) STRICT=1; shift ;;
+    --child) CHILD=1; shift ;;
+    --) shift; CLI_CMD=("$@"); break ;;
+    --help) usage ;;
+    *) echoerr "Unknown argument: $1"; usage ;;
+  esac
 done
 
-if [[ "$WAITFORIT_HOST" == "" || "$WAITFORIT_PORT" == "" ]]; then
-    echoerr "Error: you need to provide a host and port to test."
-    usage
+# Validate host and port
+[[ -z "$HOST" || -z "$PORT" ]] && { echoerr "Error: host and port required"; usage; }
+
+# Determine if `timeout` is from busybox
+TIMEOUT_PATH=$(type -p timeout)
+TIMEOUT_PATH=$(realpath "$TIMEOUT_PATH" 2>/dev/null || readlink -f "$TIMEOUT_PATH")
+
+if [[ $TIMEOUT_PATH =~ busybox ]]; then
+  IS_BUSYBOX=1
+  timeout 2>&1 | grep -q -- "-t " && BUSY_TIMEOUT_FLAG="-t"
 fi
 
-WAITFORIT_TIMEOUT=${WAITFORIT_TIMEOUT:-60}
-WAITFORIT_STRICT=${WAITFORIT_STRICT:-0}
-WAITFORIT_CHILD=${WAITFORIT_CHILD:-0}
-WAITFORIT_QUIET=${WAITFORIT_QUIET:-0}
-
-# Check to see if timeout is from busybox?
-WAITFORIT_TIMEOUT_PATH=$(type -p timeout)
-WAITFORIT_TIMEOUT_PATH=$(realpath $WAITFORIT_TIMEOUT_PATH 2>/dev/null || readlink -f $WAITFORIT_TIMEOUT_PATH)
-
-WAITFORIT_BUSYTIMEFLAG=""
-if [[ $WAITFORIT_TIMEOUT_PATH =~ "busybox" ]]; then
-    WAITFORIT_ISBUSY=1
-    # Check if busybox timeout uses -t flag
-    # (recent Alpine versions don't support -t anymore)
-    if timeout &>/dev/stdout | grep -q -e '-t '; then
-        WAITFORIT_BUSYTIMEFLAG="-t"
-    fi
+# Main logic
+if [[ $CHILD -eq 1 ]]; then
+  wait_for_connection
+  exit $?
 else
-    WAITFORIT_ISBUSY=0
+  if [[ $TIMEOUT -gt 0 ]]; then
+    wait_with_timeout
+    RESULT=$?
+  else
+    wait_for_connection
+    RESULT=$?
+  fi
 fi
 
-if [[ $WAITFORIT_CHILD -gt 0 ]]; then
-    wait_for
-    WAITFORIT_RESULT=$?
-    exit $WAITFORIT_RESULT
+# Run command if specified
+if [[ ${#CLI_CMD[@]} -gt 0 ]]; then
+  if [[ $RESULT -ne 0 && $STRICT -eq 1 ]]; then
+    echoerr "$CMD_NAME: strict mode, refusing to execute command"
+    exit $RESULT
+  fi
+  exec "${CLI_CMD[@]}"
 else
-    if [[ $WAITFORIT_TIMEOUT -gt 0 ]]; then
-        wait_for_wrapper
-        WAITFORIT_RESULT=$?
-    else
-        wait_for
-        WAITFORIT_RESULT=$?
-    fi
-fi
-
-if [[ $WAITFORIT_CLI != "" ]]; then
-    if [[ $WAITFORIT_RESULT -ne 0 && $WAITFORIT_STRICT -eq 1 ]]; then
-        echoerr "$WAITFORIT_cmdname: strict mode, refusing to execute subprocess"
-        exit $WAITFORIT_RESULT
-    fi
-    exec "${WAITFORIT_CLI[@]}"
-else
-    exit $WAITFORIT_RESULT
+  exit $RESULT
 fi

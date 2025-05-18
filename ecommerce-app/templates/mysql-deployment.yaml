@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: "{{ .Values.mysql.image }}"
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "{{ .Values.mysql.rootPassword }}"  # Keeps your Helm password
+            - name: MYSQL_DATABASE
+              value: "{{ .Values.mysql.database }}"     # Keeps your Helm DB name
+          ports:
+            - containerPort: {{ .Values.mysql.port }}    # Keeps your Helm port
+          volumeMounts:
+            - name: mysql-temp-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-temp-storage
+          emptyDir: {}  # FREE in-memory storage

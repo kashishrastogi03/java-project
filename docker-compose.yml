@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  db:
+  mysql:
     image: mysql:8
     container_name: mysql-container
     environment:
@@ -16,11 +16,12 @@ services:
 
   app:
     build: .
+    image: ecommerce-app
     container_name: springboot-app
     ports:
       - "9091:9091"
     depends_on:
-      - db
+      - mysql
     networks:
       - springboot-network
 

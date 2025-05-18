@@ -9,14 +9,13 @@ RUN apt-get update && apt-get install -y curl && \
 
 WORKDIR /app
 
-# Copy WAR file instead of JAR
-COPY target/*.war app.war
+# Copy the correct WAR file
+COPY target/Advancd_Assignment3-1.0-SNAPSHOT.war app.war
 
 RUN curl -o /wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
     chmod +x /wait-for-it.sh
 
 EXPOSE 9091
 
-# Run the WAR file (assumes embedded Tomcat)
-ENTRYPOINT ["/wait-for-it.sh", "db:3306", "--timeout=60", "--", "java", "-jar", "app.war"]
-
+# Run the WAR file (assumes embedded Tomcat in Spring Boot)
+ENTRYPOINT ["/wait-for-it.sh", "mysql:3306", "--timeout=60", "--", "java", "-jar", "app.war"]

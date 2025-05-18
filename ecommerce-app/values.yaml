@@ -1,0 +1,100 @@
+# Application Configuration
+replicaCount: 1
+
+image:
+  repository: kashishrastogi/ecommerce-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 9091
+
+# Database Configuration
+mysql:
+  image: mysql:8
+  rootPassword: root
+  database: ecommerce
+  port: 3306
+  volumeSize: 1Gi
+
+# Resource Management
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1024Mi"
+
+# Health Checks
+startupProbe:
+  httpGet:
+    path: /actuator/health
+    port: 9091
+  failureThreshold: 30
+  periodSeconds: 10
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health
+    port: 9091
+  initialDelaySeconds: 120
+  periodSeconds: 10
+  failureThreshold: 3
+  timeoutSeconds: 5
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health
+    port: 9091
+  initialDelaySeconds: 60
+  periodSeconds: 5
+  failureThreshold: 3
+
+# Environment Variables
+env:
+  - name: SPRING_DATASOURCE_URL
+    value: "jdbc:mysql://mysql:3306/ecommerce"
+  - name: SPRING_DATASOURCE_USERNAME
+    value: "root"
+  - name: SPRING_DATASOURCE_PASSWORD
+    value: "root"
+  - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+    value: "update"
+  - name: SERVER_PORT
+    value: "9091"
+
+# Cluster Features
+autoscaling:
+  enabled: false
+
+serviceAccount:
+  create: true
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Security
+podSecurityContext: {}
+securityContext: {}
+
+# Storage
+volumeMounts: []
+volumes: []
+
+# Scheduling
+nodeSelector: {}
+affinity: {}
+tolerations: []
+
+# Metadata
+podAnnotations: {}
+podLabels: {}
+
+# Networking
+ingress:
+  enabled: false
+  hosts: []
+  tls: []

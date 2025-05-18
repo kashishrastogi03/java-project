@@ -31,6 +31,7 @@ jobs:
           -Dsonar.organization=kashishrastogi03
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.login=$SONAR_TOKEN
+          -Dsonar.projectName=java-project
 
       - name: Upload JUnit Test Results
         if: always()

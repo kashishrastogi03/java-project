@@ -35,4 +35,4 @@ jobs:
             --create-namespace \
             --set image.repository=${{ secrets.ACR_LOGIN_SERVER }}/my-java-app \
             --set image.tag=latest \
-            --wait
+            --wait==false

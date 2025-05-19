@@ -5,6 +5,9 @@ on:
     workflows: ["Maven Build"]
     types:
       - completed
+  push:
+   branches:
+    - develop
 
 jobs:
   deploy:

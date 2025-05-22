@@ -1,0 +1,29 @@
+{
+  "properties": {
+    "displayName": "Enforce CPU Limits on Pods",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "This policy ensures that all containers have CPU limits set.",
+    "metadata": {
+      "category": "Kubernetes"
+    },
+    "parameters": {},
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Kubernetes.Data"
+          },
+          {
+            "field": "Microsoft.Kubernetes.Data.containers[*].resources.limits.cpu",
+            "exists": "false"
+          }
+        ]
+      },
+      "then": {
+        "effect": "deny"
+      }
+    }
+  }
+}

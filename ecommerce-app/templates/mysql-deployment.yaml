@@ -17,14 +17,21 @@ spec:
           image: "{{ .Values.mysql.image }}"
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: "{{ .Values.mysql.rootPassword }}"  # Keeps your Helm password
+              value: "{{ .Values.mysql.rootPassword }}"  
             - name: MYSQL_DATABASE
-              value: "{{ .Values.mysql.database }}"     # Keeps your Helm DB name
+              value: "{{ .Values.mysql.database }}"     
           ports:
-            - containerPort: {{ .Values.mysql.port }}    # Keeps your Helm port
+            - containerPort: {{ .Values.mysql.port }}
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
           volumeMounts:
             - name: mysql-temp-storage
               mountPath: /var/lib/mysql
       volumes:
         - name: mysql-temp-storage
-          emptyDir: {}  # FREE in-memory storage
+          emptyDir: {}

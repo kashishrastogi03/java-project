@@ -9,6 +9,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
   name: clusterName
   location: location
   identity: {
+    // to connect aks to any azure service
     type: 'SystemAssigned'
   }
   properties: {
@@ -37,7 +38,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
       clientId: clientId
       secret: clientSecret
     }
-    // Optional: specify Kubernetes version or omit to use default
+    
     // kubernetesVersion: '1.27.3' 
     enableRBAC: true
   }

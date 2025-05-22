@@ -8,4 +8,4 @@ spec:
   ports:
     - port: 3306
       targetPort: {{ .Values.mysql.port }}
-  # type: ClusterIP  # optional, ClusterIP is default
+  

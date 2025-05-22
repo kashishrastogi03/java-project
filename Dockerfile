@@ -1,4 +1,3 @@
-# Use OpenJDK 17 slim as base image
 FROM openjdk:17-jdk-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -9,7 +8,6 @@ RUN apt-get update && apt-get install -y curl && \
 
 WORKDIR /app
 
-# Copy the correct WAR file
 COPY target/Advancd_Assignment3-1.0-SNAPSHOT.war app.war
 
 RUN curl -o /wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
@@ -17,5 +15,4 @@ RUN curl -o /wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for
 
 EXPOSE 9091
 
-# Run the WAR file (assumes embedded Tomcat in Spring Boot)
 ENTRYPOINT ["/wait-for-it.sh", "mysql:3306", "--timeout=60", "--", "java", "-jar", "app.war"]

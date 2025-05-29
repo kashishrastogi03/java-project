@@ -89,5 +89,5 @@ jobs:
 
           for file in $files; do
             echo "Linting $file"
-            bicep build "$file" || exit 1
+            bicep lint "$file" || exit 1
           done
